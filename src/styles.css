@@ -13,6 +13,12 @@
   --hover-dur: 220ms;
   --hover-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --hover-lift: -3px;
+  --page-slide-dur: 240ms;
+  --page-fade-dur: 240ms;
+  --page-slide-distance: 18px;
+  --page-blur: 2px;
+  --page-slide-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --page-fade-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --nav-dur: 520ms;
   --nav-ease: cubic-bezier(0.32, 0.72, 0, 1);
   color-scheme: light;
@@ -356,6 +362,43 @@ img {
   transform: translateY(0);
 }
 
+.t-assistant-slide {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr;
+  overflow: hidden;
+}
+
+.t-assistant-slide .t-assistant-panel[data-page-id='menu'] {
+  --t-panel-from-x: calc(var(--page-slide-distance) * -1);
+}
+
+.t-assistant-slide .t-assistant-panel[data-page-id='contact'] {
+  --t-panel-from-x: var(--page-slide-distance);
+}
+
+.t-assistant-slide .t-assistant-panel {
+  grid-area: 1 / 1;
+  min-width: 0;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(var(--t-panel-from-x, 0));
+  filter: blur(var(--page-blur));
+  transition:
+    opacity var(--page-fade-dur) var(--page-fade-ease),
+    transform var(--page-slide-dur) var(--page-slide-ease),
+    filter var(--page-slide-dur) var(--page-slide-ease);
+  will-change: opacity, transform, filter;
+}
+
+.t-assistant-slide[data-page='menu'] .t-assistant-panel[data-page-id='menu'],
+.t-assistant-slide[data-page='contact'] .t-assistant-panel[data-page-id='contact'] {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(0);
+  filter: blur(0);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -388,6 +431,11 @@ img {
   .t-nav-menu,
   .t-footer-social {
     transition: none !important;
+  }
+
+  .t-assistant-slide .t-assistant-panel {
+    transition: none !important;
+    filter: none !important;
   }
 
   .t-assistant-trigger:hover,

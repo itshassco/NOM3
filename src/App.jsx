@@ -79,6 +79,16 @@ const socialLinks = {
   facebook: 'https://www.facebook.com/pitshangerdentalcare',
 };
 
+const contactUrl = 'https://www.pitshangerdental.com/contact-us';
+
+const contactHours = [
+  ['Mon', '09.00 - 17.30'],
+  ['Tue', '08.30 - 17.00'],
+  ['Wed', '09.00 - 17.30'],
+  ['Thur', '09.00 - 17.00'],
+  ['Fri', '08.30 - 17.00'],
+];
+
 const hours = [
   ['Mon', '9.00 am - 5.30 pm'],
   ['Tue', '8.30 am - 5.00 pm'],
@@ -198,6 +208,7 @@ function App() {
   const rootRef = useRef(null);
   const [assistantMounted, setAssistantMounted] = useState(false);
   const [assistantAnimating, setAssistantAnimating] = useState(null);
+  const [assistantView, setAssistantView] = useState('menu');
   const assistantCloseTimer = useRef(null);
   const [offerVisible, setOfferVisible] = useState(true);
   const [reviewIndex, setReviewIndex] = useState(0);
@@ -219,6 +230,7 @@ function App() {
     assistantCloseTimer.current = window.setTimeout(() => {
       setAssistantMounted(false);
       setAssistantAnimating(null);
+      setAssistantView('menu');
       assistantCloseTimer.current = null;
     }, closeMs);
   }, [assistantMounted]);
@@ -231,6 +243,7 @@ function App() {
 
     setAssistantMounted(true);
     setAssistantAnimating(null);
+    setAssistantView('menu');
   }, []);
 
   const toggleAssistant = useCallback(() => {
@@ -661,71 +674,152 @@ function App() {
             </button>
           </div>
 
-          <div className="space-y-5 px-5 pb-5 pt-4 text-sm font-normal">
-            <p className="text-ink/62">
-              Start with a quick enquiry and the team can help you join the practice, book a checkup, or ask about Invisalign and private care.
-            </p>
+          <div className="overflow-hidden px-5 pb-5 pt-4">
+            <div className="t-assistant-slide" data-page={assistantView}>
+              <div className="t-assistant-panel space-y-5 text-sm font-normal" data-page-id="menu">
+                <p className="text-ink/62">
+                  Start with a quick enquiry and the team can help you join the practice, book a checkup, or ask about Invisalign and private care.
+                </p>
 
-            <div className="space-y-3">
-              <p className="font-medium text-ink/42">Get in touch</p>
-              <div className="space-y-2">
-                <a className="t-assistant-card group flex items-center gap-3 rounded-lg bg-mist p-3" href="tel:02089973012">
-                  <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-white text-navy">
-                    <Phone size={15} />
-                  </span>
+                <div className="space-y-3">
+                  <p className="font-medium text-ink/42">Get in touch</p>
+                  <div className="space-y-2">
+                    <a className="t-assistant-card group flex items-center gap-3 rounded-lg bg-mist p-3" href="tel:02089973012">
+                      <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-white text-navy">
+                        <Phone size={15} />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block font-medium text-navy">Call the practice</span>
+                        <span className="mt-1 block font-normal text-ink/52">020 8997 3012</span>
+                      </span>
+                      <ArrowRight size={14} className="t-assistant-card-arrow shrink-0 text-ink/32" />
+                    </a>
+                    <a className="t-assistant-card group flex items-center gap-3 rounded-lg bg-mist p-3" href="mailto:pitshangerdental@gmail.com">
+                      <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-white text-navy">
+                        <Mail size={15} />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block font-medium text-navy">Email the team</span>
+                        <span className="mt-1 block truncate font-normal text-ink/52">pitshangerdental@gmail.com</span>
+                      </span>
+                      <ArrowRight size={14} className="t-assistant-card-arrow shrink-0 text-ink/32" />
+                    </a>
+                    <button
+                      className="t-assistant-card group flex w-full items-center gap-3 rounded-lg bg-mist p-3 text-left"
+                      onClick={() => setAssistantView('contact')}
+                      type="button"
+                    >
+                      <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-white text-navy">
+                        <MapPin size={15} />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block font-medium text-navy">Contact us</span>
+                        <span className="mt-1 block font-normal text-ink/52">Address, opening hours & directions</span>
+                      </span>
+                      <ArrowRight size={14} className="t-assistant-card-arrow shrink-0 text-ink/32" />
+                    </button>
+                  </div>
+                </div>
+
+                <a className="t-assistant-action-primary group flex items-center gap-3 rounded-lg bg-peach p-3 text-ink" href="#visit">
                   <span className="min-w-0 flex-1">
-                    <span className="block font-medium text-navy">Call the practice</span>
-                    <span className="mt-1 block font-normal text-ink/52">020 8997 3012</span>
+                    <span className="block font-medium">View registration details</span>
+                    <span className="mt-1 block font-normal text-ink/58">Private and NHS patient information</span>
                   </span>
                   <ArrowRight size={14} className="t-assistant-card-arrow shrink-0 text-ink/32" />
                 </a>
-                <a className="t-assistant-card group flex items-center gap-3 rounded-lg bg-mist p-3" href="mailto:pitshangerdental@gmail.com">
-                  <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-white text-navy">
-                    <Mail size={15} />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block font-medium text-navy">Email the team</span>
-                    <span className="mt-1 block truncate font-normal text-ink/52">pitshangerdental@gmail.com</span>
-                  </span>
-                  <ArrowRight size={14} className="t-assistant-card-arrow shrink-0 text-ink/32" />
-                </a>
+
+                <div className="space-y-3">
+                  <p className="font-medium text-ink/42">Connect online</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <a
+                      className="t-assistant-card t-assistant-card-social flex items-center gap-2.5 rounded-lg bg-mist p-3"
+                      href={socialLinks.instagram}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="Pitshanger Dental on Instagram"
+                    >
+                      <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-white text-navy">
+                        <InstagramIcon className="size-3.5" />
+                      </span>
+                      <span className="font-medium text-navy">Instagram</span>
+                    </a>
+                    <a
+                      className="t-assistant-card t-assistant-card-social flex items-center gap-2.5 rounded-lg bg-mist p-3"
+                      href={socialLinks.facebook}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="Pitshanger Dental on Facebook"
+                    >
+                      <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-white text-navy">
+                        <FacebookIcon className="size-3.5" />
+                      </span>
+                      <span className="font-medium text-navy">Facebook</span>
+                    </a>
+                  </div>
+                </div>
               </div>
-            </div>
 
-            <a className="t-assistant-action-primary group flex items-center gap-3 rounded-lg bg-peach p-3 text-ink" href="#visit">
-              <span className="min-w-0 flex-1">
-                <span className="block font-medium">View registration details</span>
-                <span className="mt-1 block font-normal text-ink/58">Private and NHS patient information</span>
-              </span>
-              <ArrowRight size={14} className="t-assistant-card-arrow shrink-0 text-ink/32" />
-            </a>
+              <div className="t-assistant-panel space-y-4 text-sm font-normal" data-page-id="contact">
+                <button
+                  className="flex items-center gap-1 font-medium text-navy"
+                  onClick={() => setAssistantView('menu')}
+                  type="button"
+                >
+                  <ChevronLeft size={16} />
+                  Back
+                </button>
 
-            <div className="space-y-3">
-              <p className="font-medium text-ink/42">Connect online</p>
-              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-4 rounded-lg bg-mist p-4">
+                  <div>
+                    <p className="font-medium text-navy">50 Pitshanger Lane</p>
+                    <p className="font-normal text-ink/62">Ealing, London</p>
+                    <p className="font-normal text-ink/62">W5 1QY</p>
+                  </div>
+
+                  <div className="space-y-1">
+                    <a className="block font-normal text-navy" href="mailto:pitshangerdental@gmail.com">
+                      pitshangerdental@gmail.com
+                    </a>
+                    <a className="block font-normal text-navy" href="tel:02089973012">
+                      020 8997 3012
+                    </a>
+                  </div>
+
+                  <div>
+                    <p className="font-medium text-navy">Opening Hours</p>
+                    <ul className="mt-2 space-y-1">
+                      {contactHours.map(([day, time]) => (
+                        <li className="flex justify-between gap-4 font-normal text-ink/62" key={day}>
+                          <span className="font-medium text-ink/72">{day}</span>
+                          <span>{time}</span>
+                        </li>
+                      ))}
+                      <li className="flex justify-between gap-4 font-normal text-ink/62">
+                        <span className="font-medium text-ink/72">Sat + Sun</span>
+                        <span>Closed</span>
+                      </li>
+                    </ul>
+                    <p className="mt-3 font-normal text-ink/52">Closed for lunch 1pm–2pm</p>
+                  </div>
+                </div>
+
                 <a
-                  className="t-assistant-card t-assistant-card-social flex items-center gap-2.5 rounded-lg bg-mist p-3"
-                  href={socialLinks.instagram}
+                  className="t-assistant-card group flex items-center justify-between gap-3 rounded-lg bg-mist p-3"
+                  href={contactUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label="Pitshanger Dental on Instagram"
                 >
-                  <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-white text-navy">
-                    <InstagramIcon className="size-3.5" />
-                  </span>
-                  <span className="font-medium text-navy">Instagram</span>
+                  <span className="font-medium text-navy">Full contact page</span>
+                  <ArrowRight size={14} className="t-assistant-card-arrow shrink-0 text-ink/32" />
                 </a>
+
                 <a
-                  className="t-assistant-card t-assistant-card-social flex items-center gap-2.5 rounded-lg bg-mist p-3"
-                  href={socialLinks.facebook}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Pitshanger Dental on Facebook"
+                  className="t-assistant-action-primary group flex items-center justify-between gap-3 rounded-lg bg-peach p-3 text-ink"
+                  href="#visit"
                 >
-                  <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-white text-navy">
-                    <FacebookIcon className="size-3.5" />
-                  </span>
-                  <span className="font-medium text-navy">Facebook</span>
+                  <span className="font-medium">NEW PATIENTS: Click to Join Private or NHS</span>
+                  <ArrowRight size={14} className="t-assistant-card-arrow shrink-0 text-ink/32" />
                 </a>
               </div>
             </div>
