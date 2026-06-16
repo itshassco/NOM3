@@ -3,6 +3,10 @@
 @tailwind utilities;
 
 :root {
+  --resize-dur: 300ms;
+  --resize-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --nav-dur: 520ms;
+  --nav-ease: cubic-bezier(0.32, 0.72, 0, 1);
   color-scheme: light;
   font-family: "Inter Display", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-synthesis: none;
@@ -44,6 +48,35 @@ img {
   color: #070713;
 }
 
+.t-resize {
+  transition:
+    width var(--resize-dur) var(--resize-ease),
+    height var(--resize-dur) var(--resize-ease);
+  will-change: width, height;
+}
+
+.t-nav-shell {
+  transition: top var(--nav-dur) var(--nav-ease);
+  will-change: top;
+}
+
+.t-nav-surface {
+  transition:
+    width var(--nav-dur) var(--nav-ease),
+    border-radius var(--nav-dur) var(--nav-ease),
+    padding-inline var(--nav-dur) var(--nav-ease),
+    box-shadow var(--nav-dur) var(--nav-ease);
+  will-change: width, border-radius, padding-inline;
+}
+
+.t-assistant-label {
+  transition:
+    max-width var(--resize-dur) var(--resize-ease),
+    opacity 180ms ease,
+    transform var(--resize-dur) var(--resize-ease);
+  will-change: max-width, opacity, transform;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -57,6 +90,13 @@ img {
   .reveal {
     opacity: 1 !important;
     transform: none !important;
+  }
+
+  .t-resize,
+  .t-nav-shell,
+  .t-nav-surface,
+  .t-assistant-label {
+    transition: none !important;
   }
 }
 

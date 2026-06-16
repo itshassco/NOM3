@@ -197,15 +197,13 @@ function App() {
 
       <Hero className="hero-root">
         <header
-          className={`fixed z-50 transition-all duration-300 ${
-            isScrolled
-              ? 'inset-x-0 top-0 w-full'
-              : 'left-1/2 top-6 w-[min(82rem,calc(100%-1rem))] -translate-x-1/2'
-          }`}
+          className={`t-nav-shell fixed inset-x-0 z-50 ${isScrolled ? 'top-0' : 'top-6'}`}
         >
           <nav
-            className={`flex h-[64px] items-center justify-between bg-white px-4 text-sm text-ink/62 shadow-[0_12px_45px_rgba(29,39,110,0.12)] ring-1 ring-navy/10 transition-all duration-300 ${
-              isScrolled ? 'rounded-none px-5 md:px-8' : 'rounded-full'
+            className={`t-nav-surface mx-auto flex h-[64px] items-center justify-between bg-white text-sm text-ink/62 shadow-[0_12px_45px_rgba(29,39,110,0.12)] ring-1 ring-navy/10 ${
+              isScrolled
+                ? 'w-full rounded-none px-5 md:px-8'
+                : 'w-[min(82rem,calc(100%-1rem))] rounded-[2rem] px-4'
             }`}
           >
             <div className="flex min-w-0 items-center gap-8">
@@ -573,15 +571,15 @@ function App() {
       )}
 
       <button
-        className={`fixed bottom-[86px] right-4 z-50 flex items-center rounded-[8px] bg-ink p-3 text-sm font-semibold text-white shadow-[0_18px_60px_rgba(0,0,0,0.28)] transition-all duration-300 ${isScrolled ? 'gap-0' : 'gap-3 pr-4'}`}
+        className={`t-resize fixed bottom-[86px] right-4 z-50 flex w-[60px] items-center overflow-hidden rounded-[8px] bg-ink p-3 text-sm font-semibold text-white shadow-[0_18px_60px_rgba(0,0,0,0.28)] ${isScrolled ? 'justify-center gap-0 sm:w-[60px]' : 'gap-3 pr-4 sm:w-[232px]'}`}
         onClick={() => setAssistantOpen((open) => !open)}
         aria-label="Register at Pitshanger Dental"
         type="button"
       >
         <img src={logo} alt="" className="size-9 brightness-0 invert" />
-        {!isScrolled && (
-          <span className="hidden sm:inline">Pitshanger Assistant</span>
-        )}
+        <span className={`t-assistant-label hidden whitespace-nowrap sm:inline ${isScrolled ? 'max-w-0 -translate-x-1 opacity-0' : 'max-w-[160px] translate-x-0 opacity-100'}`}>
+          Pitshanger Assistant
+        </span>
       </button>
 
       {offerVisible && (
