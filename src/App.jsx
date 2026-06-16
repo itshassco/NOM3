@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { css, Global } from '@emotion/react';
 import styled from '@emotion/styled';
 import gsap from 'gsap';
@@ -17,6 +17,7 @@ import {
   X,
 } from 'lucide-react';
 import logo from './assets/logo-placeholder.svg';
+import googleLogo from './assets/google-logo.svg';
 import heroBg from './assets/bg.png';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -72,6 +73,11 @@ const reviews = [
   ['Google Reviews', 'Excellent care and patient satisfaction reflected in 190+ 5-star Google reviews.'],
   ['Pitshanger Dental', 'Generations of dentists caring for generations of smiles.'],
 ];
+
+const socialLinks = {
+  instagram: 'https://www.instagram.com/pitshangerdental/',
+  facebook: 'https://www.facebook.com/pitshangerdentalcare',
+};
 
 const hours = [
   ['Mon', '9.00 am - 5.30 pm'],
@@ -172,13 +178,86 @@ function useMotion(rootRef) {
   }, [rootRef]);
 }
 
+function InstagramIcon({ className }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
+      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zm0 10.162a3.999 3.999 0 1 1 0-7.998 3.999 3.999 0 0 1 0 7.998zm6.406-11.845a1.44 1.44 0 1 1-2.881 0 1.44 1.44 0 0 1 2.881 0z" />
+    </svg>
+  );
+}
+
+function FacebookIcon({ className }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
+      <path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073c0 6.023 4.388 11.015 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.088 24 18.096 24 12.073z" />
+    </svg>
+  );
+}
+
 function App() {
   const rootRef = useRef(null);
-  const [assistantOpen, setAssistantOpen] = useState(false);
+  const [assistantMounted, setAssistantMounted] = useState(false);
+  const [assistantAnimating, setAssistantAnimating] = useState(null);
+  const assistantCloseTimer = useRef(null);
   const [offerVisible, setOfferVisible] = useState(true);
   const [reviewIndex, setReviewIndex] = useState(0);
   const [isScrolled, setIsScrolled] = useState(false);
   useMotion(rootRef);
+
+  const closeAssistant = useCallback(() => {
+    if (!assistantMounted) return;
+
+    setAssistantAnimating('closing');
+
+    if (assistantCloseTimer.current) {
+      clearTimeout(assistantCloseTimer.current);
+    }
+
+    const closeMs =
+      parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--dropdown-close-dur')) || 150;
+
+    assistantCloseTimer.current = window.setTimeout(() => {
+      setAssistantMounted(false);
+      setAssistantAnimating(null);
+      assistantCloseTimer.current = null;
+    }, closeMs);
+  }, [assistantMounted]);
+
+  const openAssistant = useCallback(() => {
+    if (assistantCloseTimer.current) {
+      clearTimeout(assistantCloseTimer.current);
+      assistantCloseTimer.current = null;
+    }
+
+    setAssistantMounted(true);
+    setAssistantAnimating(null);
+  }, []);
+
+  const toggleAssistant = useCallback(() => {
+    if (assistantMounted && assistantAnimating !== 'closing') {
+      closeAssistant();
+      return;
+    }
+
+    if (!assistantMounted) {
+      openAssistant();
+    }
+  }, [assistantAnimating, assistantMounted, closeAssistant, openAssistant]);
+
+  useEffect(() => {
+    if (!assistantMounted || assistantAnimating !== null) return undefined;
+
+    const frame = requestAnimationFrame(() => setAssistantAnimating('open'));
+    return () => cancelAnimationFrame(frame);
+  }, [assistantAnimating, assistantMounted]);
+
+  useEffect(() => {
+    return () => {
+      if (assistantCloseTimer.current) {
+        clearTimeout(assistantCloseTimer.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const updateScrollState = () => setIsScrolled(window.scrollY > 36);
@@ -207,27 +286,27 @@ function App() {
             }`}
           >
             <div className="flex min-w-0 items-center gap-8">
-              <a href="#top" className="flex shrink-0 items-center gap-2" aria-label="Pitshanger Dental home">
+              <a href="#top" className="t-nav-brand flex shrink-0 items-center gap-2" aria-label="Pitshanger Dental home">
                 <img src={logo} alt="Pitshanger Dental logo placeholder" className="size-9 rounded-[8px] bg-white" />
                 <span className="hidden text-base font-semibold text-navy sm:inline">Pitshanger Dental</span>
               </a>
               <div className="hidden gap-7 lg:flex">
-                <a href="#care">About Us</a>
-                <a href="#visit">Contact Us</a>
-                <a href="#offers">Fee Guide</a>
-                <a href="#services">Treatments</a>
-                <a href="#services">Invisalign</a>
+                <a className="t-nav-link" href="#care">About Us</a>
+                <a className="t-nav-link" href="#visit">Contact Us</a>
+                <a className="t-nav-link" href="#offers">Fee Guide</a>
+                <a className="t-nav-link" href="#services">Treatments</a>
+                <a className="t-nav-link" href="#services">Invisalign</a>
               </div>
             </div>
             <div className="ml-auto flex items-center gap-2">
-              <a className="hidden items-center gap-2 px-2 text-ink/60 transition hover:text-navy md:inline-flex" href="tel:02089973012">
+              <a className="t-nav-phone hidden items-center gap-2 px-2 text-ink/60 md:inline-flex" href="tel:02089973012">
                 <Phone size={15} />
                 020 8997 3012
               </a>
-              <a className="rounded-full bg-navy px-5 py-3 font-medium text-white transition hover:bg-iris" href="#visit">
+              <a className="t-nav-cta rounded-full bg-navy px-5 py-3 font-medium text-white" href="#visit">
                 Join Private or NHS
               </a>
-              <button className="grid size-10 place-items-center rounded-full bg-mist text-navy" aria-label="Open menu">
+              <button className="t-nav-menu grid size-10 place-items-center rounded-full bg-mist text-navy" aria-label="Open menu">
                 <Menu size={18} />
               </button>
             </div>
@@ -390,7 +469,10 @@ function App() {
           <div className="mx-auto w-[min(82rem,calc(100%-2rem))]">
             <div className="reveal grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
               <div>
-                <p className="text-sm font-medium text-ink/48">190+ 5-star Google reviews</p>
+                <div className="flex items-center gap-2.5">
+                  <img src={googleLogo} alt="" className="size-5 shrink-0" aria-hidden="true" />
+                  <p className="text-sm font-medium text-ink/48">190+ 5★ Google reviews</p>
+                </div>
                 <h2 className="display-lg mt-3 font-semibold">
                   Trusted by patients across Ealing.
                 </h2>
@@ -528,6 +610,26 @@ function App() {
           <div>
             <p className="font-semibold">Pitshanger Dental</p>
             <p className="mt-2 text-sm text-white/48">Dentist in Ealing, West London. Site last updated April 2026.</p>
+            <div className="mt-4 flex items-center gap-2">
+              <a
+                className="t-footer-social grid size-10 place-items-center rounded-full bg-white/8 text-white/72"
+                href={socialLinks.instagram}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Pitshanger Dental on Instagram"
+              >
+                <InstagramIcon className="size-[18px]" />
+              </a>
+              <a
+                className="t-footer-social grid size-10 place-items-center rounded-full bg-white/8 text-white/72"
+                href={socialLinks.facebook}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Pitshanger Dental on Facebook"
+              >
+                <FacebookIcon className="size-[18px]" />
+              </a>
+            </div>
           </div>
           <div className="flex flex-wrap gap-4 text-sm text-white/58">
             <span>Sitemap</span>
@@ -539,40 +641,102 @@ function App() {
         </div>
       </footer>
 
-      {assistantOpen && (
-        <aside className="fixed bottom-[154px] right-4 z-50 w-[min(25rem,calc(100vw-2rem))] overflow-hidden rounded-[8px] bg-white text-ink shadow-[0_24px_90px_rgba(29,39,110,0.24)] ring-1 ring-navy/10">
-          <div className="flex items-center justify-between bg-navy p-4 text-white">
-            <div className="flex items-center gap-3">
-              <img src={logo} alt="" className="size-9 brightness-0 invert" />
-              <div>
-                <p className="font-semibold">Register at Pitshanger Dental</p>
-                <p className="text-xs text-white/62">Private and NHS enquiries</p>
+      {assistantMounted && (
+        <aside
+          className={`t-dropdown fixed bottom-[154px] right-4 z-50 w-[min(23rem,calc(100vw-2rem))] overflow-hidden rounded-xl bg-white text-ink shadow-[0_20px_70px_rgba(29,39,110,0.2)] ${assistantAnimating === 'open' ? 'is-open' : ''} ${assistantAnimating === 'closing' ? 'is-closing' : ''}`}
+          data-origin="bottom-right"
+        >
+          <div className="flex items-start justify-between gap-3 bg-navy px-5 py-4 text-white">
+            <div className="flex min-w-0 items-center gap-3">
+              <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-white/12">
+                <img src={logo} alt="" className="size-6 brightness-0 invert" />
+              </span>
+              <div className="min-w-0">
+                <p className="text-sm font-medium">Register at Pitshanger Dental</p>
+                <p className="mt-1 text-sm font-normal text-white/62">Private and NHS enquiries welcome</p>
               </div>
             </div>
-            <button className="grid size-8 place-items-center rounded-full bg-white/10" onClick={() => setAssistantOpen(false)} type="button" aria-label="Close registration assistant">
-              <X size={16} />
+            <button className="t-assistant-close grid size-7 shrink-0 place-items-center rounded-full bg-white/10" onClick={closeAssistant} type="button" aria-label="Close registration assistant">
+              <X size={14} />
             </button>
           </div>
-          <div className="space-y-3 p-4">
-            <p className="text-sm leading-6 text-ink/62">
-              Start with a quick enquiry and the team can help you join the practice, book a new patient checkup, or ask about Invisalign and private care.
+
+          <div className="space-y-5 px-5 pb-5 pt-4 text-sm font-normal">
+            <p className="text-ink/62">
+              Start with a quick enquiry and the team can help you join the practice, book a checkup, or ask about Invisalign and private care.
             </p>
-            <a className="flex items-center justify-between rounded-[8px] bg-mist p-4 font-medium text-navy" href="tel:02089973012">
-              Call 020 8997 3012 <Phone size={17} />
+
+            <div className="space-y-3">
+              <p className="font-medium text-ink/42">Get in touch</p>
+              <div className="space-y-2">
+                <a className="t-assistant-card group flex items-center gap-3 rounded-lg bg-mist p-3" href="tel:02089973012">
+                  <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-white text-navy">
+                    <Phone size={15} />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-medium text-navy">Call the practice</span>
+                    <span className="mt-1 block font-normal text-ink/52">020 8997 3012</span>
+                  </span>
+                  <ArrowRight size={14} className="t-assistant-card-arrow shrink-0 text-ink/32" />
+                </a>
+                <a className="t-assistant-card group flex items-center gap-3 rounded-lg bg-mist p-3" href="mailto:pitshangerdental@gmail.com">
+                  <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-white text-navy">
+                    <Mail size={15} />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-medium text-navy">Email the team</span>
+                    <span className="mt-1 block truncate font-normal text-ink/52">pitshangerdental@gmail.com</span>
+                  </span>
+                  <ArrowRight size={14} className="t-assistant-card-arrow shrink-0 text-ink/32" />
+                </a>
+              </div>
+            </div>
+
+            <a className="t-assistant-action-primary group flex items-center gap-3 rounded-lg bg-peach p-3 text-ink" href="#visit">
+              <span className="min-w-0 flex-1">
+                <span className="block font-medium">View registration details</span>
+                <span className="mt-1 block font-normal text-ink/58">Private and NHS patient information</span>
+              </span>
+              <ArrowRight size={14} className="t-assistant-card-arrow shrink-0 text-ink/32" />
             </a>
-            <a className="flex items-center justify-between rounded-[8px] bg-mist p-4 font-medium text-navy" href="mailto:pitshangerdental@gmail.com">
-              Email the practice <Mail size={17} />
-            </a>
-            <a className="flex items-center justify-between rounded-[8px] bg-peach p-4 font-semibold text-ink" href="#visit">
-              View registration details <ArrowRight size={17} />
-            </a>
+
+            <div className="space-y-3">
+              <p className="font-medium text-ink/42">Connect online</p>
+              <div className="grid grid-cols-2 gap-2">
+                <a
+                  className="t-assistant-card t-assistant-card-social flex items-center gap-2.5 rounded-lg bg-mist p-3"
+                  href={socialLinks.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Pitshanger Dental on Instagram"
+                >
+                  <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-white text-navy">
+                    <InstagramIcon className="size-3.5" />
+                  </span>
+                  <span className="font-medium text-navy">Instagram</span>
+                </a>
+                <a
+                  className="t-assistant-card t-assistant-card-social flex items-center gap-2.5 rounded-lg bg-mist p-3"
+                  href={socialLinks.facebook}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Pitshanger Dental on Facebook"
+                >
+                  <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-white text-navy">
+                    <FacebookIcon className="size-3.5" />
+                  </span>
+                  <span className="font-medium text-navy">Facebook</span>
+                </a>
+              </div>
+            </div>
           </div>
         </aside>
       )}
 
       <button
-        className={`t-resize fixed bottom-[86px] right-4 z-50 flex w-[60px] items-center overflow-hidden rounded-[8px] bg-ink p-3 text-sm font-semibold text-white shadow-[0_18px_60px_rgba(0,0,0,0.28)] ${isScrolled ? 'justify-center gap-0 sm:w-[60px]' : 'gap-3 pr-4 sm:w-[232px]'}`}
-        onClick={() => setAssistantOpen((open) => !open)}
+        className={`t-resize t-assistant-trigger fixed bottom-[86px] right-4 z-50 flex w-[60px] items-center overflow-hidden rounded-[8px] bg-ink p-3 text-sm font-semibold text-white shadow-[0_18px_60px_rgba(0,0,0,0.28)] ${isScrolled ? 'justify-center gap-0 sm:w-[60px]' : 'gap-3 pr-4 sm:w-[232px]'}`}
+        onClick={toggleAssistant}
+        aria-expanded={assistantMounted && assistantAnimating === 'open'}
         aria-label="Register at Pitshanger Dental"
         type="button"
       >
