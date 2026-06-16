@@ -81,12 +81,22 @@ const socialLinks = {
 
 const contactUrl = 'https://www.pitshangerdental.com/contact-us';
 
+const googleReviewsUrl = 'https://www.google.com/search?q=pitshanger+dental&rlz=1C1GCEU_enGB837GB925&oq=pitshanger+dental&aqs=chrome..69i57.2112j0j1&sourceid=chrome&ie=UTF-8';
+
 const contactHours = [
   ['Mon', '09.00 - 17.30'],
   ['Tue', '08.30 - 17.00'],
   ['Wed', '09.00 - 17.30'],
   ['Thur', '09.00 - 17.00'],
   ['Fri', '08.30 - 17.00'],
+];
+
+const navLinks = [
+  ['About Us', '#care'],
+  ['Contact Us', '#visit'],
+  ['Fee Guide', '#offers'],
+  ['Treatments', '#services'],
+  ['Invisalign', '#services'],
 ];
 
 const hours = [
@@ -103,6 +113,10 @@ const Shell = styled.div`
   padding-bottom: 72px;
   background: #f5f4fa;
   color: #050505;
+
+  @media (max-width: 767px) {
+    padding-bottom: 0;
+  }
 `;
 
 const Hero = styled.section`
@@ -111,8 +125,25 @@ const Hero = styled.section`
   margin: 8px;
   overflow: hidden;
   border-radius: 8px;
-  background: url(${heroBg}) center / cover;
+  background: url(${heroBg}) center / cover no-repeat;
   color: #070713;
+
+  @media (max-width: 767px) {
+    min-height: 100svh;
+    margin: 0;
+    border-radius: 0;
+    background-position: 65% 100%;
+    background-size: auto 118%;
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      background: linear-gradient(to top, rgba(255, 255, 255, 0.48) 0%, rgba(255, 255, 255, 0.16) 42%, transparent 72%);
+    }
+  }
 `;
 
 const Section = styled.section`
@@ -213,7 +244,11 @@ function App() {
   const [offerVisible, setOfferVisible] = useState(true);
   const [reviewIndex, setReviewIndex] = useState(0);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   useMotion(rootRef);
+
+  const closeMobileMenu = useCallback(() => setMobileMenuOpen(false), []);
+  const toggleMobileMenu = useCallback(() => setMobileMenuOpen((open) => !open), []);
 
   const closeAssistant = useCallback(() => {
     if (!assistantMounted) return;
@@ -279,9 +314,34 @@ function App() {
     return () => window.removeEventListener('scroll', updateScrollState);
   }, []);
 
+  useEffect(() => {
+    if (!mobileMenuOpen) return undefined;
+
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') closeMobileMenu();
+    };
+
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKeyDown);
+
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [closeMobileMenu, mobileMenuOpen]);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(min-width: 1024px)');
+    const handleChange = () => closeMobileMenu();
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, [closeMobileMenu]);
+
   const activeReview = reviews[reviewIndex];
   const previousReview = () => setReviewIndex((index) => (index === 0 ? reviews.length - 1 : index - 1));
   const nextReview = () => setReviewIndex((index) => (index + 1) % reviews.length);
+  const assistantOffsetClass = offerVisible ? 't-assistant-trigger--with-offer' : 't-assistant-trigger--no-offer';
+  const assistantShellOffsetClass = offerVisible ? 't-assistant-shell--with-offer' : 't-assistant-shell--no-offer';
 
   return (
     <Shell ref={rootRef}>
@@ -289,44 +349,80 @@ function App() {
 
       <Hero className="hero-root">
         <header
-          className={`t-nav-shell fixed inset-x-0 z-50 ${isScrolled ? 'top-0' : 'top-6'}`}
+          className={`t-nav-shell fixed inset-x-0 top-0 z-50 ${isScrolled ? '' : 'lg:top-6'}`}
         >
           <nav
-            className={`t-nav-surface mx-auto flex h-[64px] items-center justify-between bg-white text-sm text-ink/62 shadow-[0_12px_45px_rgba(29,39,110,0.12)] ring-1 ring-navy/10 ${
+            className={`t-nav-surface mx-auto flex w-full flex-col overflow-hidden rounded-none bg-white px-4 text-sm text-ink/62 shadow-[0_12px_45px_rgba(29,39,110,0.12)] ring-1 ring-navy/10 ${
               isScrolled
-                ? 'w-full rounded-none px-5 md:px-8'
-                : 'w-[min(82rem,calc(100%-1rem))] rounded-[2rem] px-4'
+                ? 'px-5 md:px-8'
+                : 'lg:w-[min(82rem,calc(100%-1rem))] lg:rounded-[2rem]'
             }`}
           >
-            <div className="flex min-w-0 items-center gap-8">
-              <a href="#top" className="t-nav-brand flex shrink-0 items-center gap-2" aria-label="Pitshanger Dental home">
-                <img src={logo} alt="Pitshanger Dental logo placeholder" className="size-9 rounded-[8px] bg-white" />
-                <span className="hidden text-base font-semibold text-navy sm:inline">Pitshanger Dental</span>
-              </a>
-              <div className="hidden gap-7 lg:flex">
-                <a className="t-nav-link" href="#care">About Us</a>
-                <a className="t-nav-link" href="#visit">Contact Us</a>
-                <a className="t-nav-link" href="#offers">Fee Guide</a>
-                <a className="t-nav-link" href="#services">Treatments</a>
-                <a className="t-nav-link" href="#services">Invisalign</a>
+            <div className="flex h-[64px] shrink-0 w-full items-center justify-between">
+              <div className="flex min-w-0 items-center gap-8">
+                <a href="#top" className="t-nav-brand flex shrink-0 items-center gap-2" aria-label="Pitshanger Dental home">
+                  <img src={logo} alt="Pitshanger Dental logo placeholder" className="size-9 rounded-[8px] bg-white" />
+                  <span className="hidden text-base font-semibold text-navy sm:inline">Pitshanger Dental</span>
+                </a>
+                <div className="hidden gap-7 lg:flex">
+                  {navLinks.map(([label, href]) => (
+                    <a className="t-nav-link" href={href} key={label}>
+                      {label}
+                    </a>
+                  ))}
+                </div>
+              </div>
+              <div className="ml-auto flex items-center gap-2">
+                <a className="t-nav-phone hidden items-center gap-2 px-2 text-ink/60 md:inline-flex" href="tel:02089973012">
+                  <Phone size={15} />
+                  020 8997 3012
+                </a>
+                <a
+                  className="t-nav-cta inline-flex shrink-0 rounded-full bg-navy px-3 py-2.5 text-xs font-medium text-white sm:px-5 sm:py-3 sm:text-sm"
+                  href="#visit"
+                >
+                  Join Private or NHS
+                </a>
+                <button
+                  className="t-nav-menu grid size-10 place-items-center rounded-full bg-mist text-navy lg:hidden"
+                  onClick={toggleMobileMenu}
+                  aria-expanded={mobileMenuOpen}
+                  aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+                  type="button"
+                >
+                  {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+                </button>
               </div>
             </div>
-            <div className="ml-auto flex items-center gap-2">
-              <a className="t-nav-phone hidden items-center gap-2 px-2 text-ink/60 md:inline-flex" href="tel:02089973012">
-                <Phone size={15} />
-                020 8997 3012
-              </a>
-              <a className="t-nav-cta rounded-full bg-navy px-5 py-3 font-medium text-white" href="#visit">
-                Join Private or NHS
-              </a>
-              <button className="t-nav-menu grid size-10 place-items-center rounded-full bg-mist text-navy" aria-label="Open menu">
-                <Menu size={18} />
-              </button>
+
+            <div className={`t-mobile-menu w-full lg:hidden ${mobileMenuOpen ? 'is-open' : ''}`}>
+              <div className={`t-mobile-menu-inner ${mobileMenuOpen ? 'is-visible' : ''}`}>
+                <div className="flex flex-col gap-1">
+                  {navLinks.map(([label, href]) => (
+                    <a
+                      className="t-mobile-nav-link rounded-lg px-3 py-3 font-medium text-navy"
+                      href={href}
+                      key={label}
+                      onClick={closeMobileMenu}
+                    >
+                      {label}
+                    </a>
+                  ))}
+                </div>
+                <a
+                  className="t-mobile-nav-link mt-2 flex items-center gap-2 rounded-lg px-3 py-3 font-medium text-navy"
+                  href="tel:02089973012"
+                  onClick={closeMobileMenu}
+                >
+                  <Phone size={16} />
+                  020 8997 3012
+                </a>
+              </div>
             </div>
           </nav>
         </header>
 
-        <div className="relative z-10 mx-auto flex min-h-[calc(100svh-16px)] w-[min(82rem,calc(100%-2rem))] flex-col justify-end pb-28 pt-28 md:pb-14">
+        <div className="relative z-10 mx-auto flex min-h-[100svh] w-[min(82rem,calc(100%-2rem))] flex-col justify-end pb-12 pt-28 md:min-h-[calc(100svh-16px)] md:pb-14">
           <div className="max-w-[38rem]">
               <div className="hero-enter mb-5 inline-flex items-center gap-2 rounded-full bg-white/82 px-4 py-2 text-sm text-navy shadow-[0_10px_30px_rgba(29,39,110,0.12)]">
                 <Check size={16} />
@@ -348,13 +444,26 @@ function App() {
               </div>
           </div>
 
-          <div className="mt-12 grid max-w-3xl gap-px overflow-hidden rounded-[8px] bg-navy/10 text-ink md:grid-cols-3">
-            {proof.map(([title, body]) => (
-              <div className="metric-enter bg-white/82 px-5 py-4" key={title}>
-                <p className="font-semibold">{title}</p>
-                <p className="mt-1 text-sm text-ink/58">{body}</p>
-              </div>
-            ))}
+          <a
+            className="metric-enter mt-4 inline-flex items-center gap-2.5 transition hover:opacity-80 md:hidden"
+            href={googleReviewsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Read Pitshanger Dental Google reviews"
+          >
+            <img src={googleLogo} alt="" className="size-5 shrink-0" aria-hidden="true" />
+            <span className="text-base font-medium text-ink/48">190+ 5★ Google reviews</span>
+          </a>
+
+          <div className="mt-12 hidden max-w-3xl overflow-hidden rounded-[8px] bg-navy/10 text-ink md:block">
+            <ul className="grid grid-cols-3 gap-px">
+              {proof.map(([title, body]) => (
+                <li className="metric-enter bg-white/82 px-5 py-4" key={title}>
+                  <p className="font-semibold">{title}</p>
+                  <p className="mt-1 text-sm text-ink/58">{body}</p>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </Hero>
@@ -482,10 +591,16 @@ function App() {
           <div className="mx-auto w-[min(82rem,calc(100%-2rem))]">
             <div className="reveal grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
               <div>
-                <div className="flex items-center gap-2.5">
+                <a
+                  className="inline-flex items-center gap-2.5 transition hover:opacity-80"
+                  href={googleReviewsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Read Pitshanger Dental Google reviews"
+                >
                   <img src={googleLogo} alt="" className="size-5 shrink-0" aria-hidden="true" />
-                  <p className="text-sm font-medium text-ink/48">190+ 5★ Google reviews</p>
-                </div>
+                  <span className="text-base font-medium text-ink/48">190+ 5★ Google reviews</span>
+                </a>
                 <h2 className="display-lg mt-3 font-semibold">
                   Trusted by patients across Ealing.
                 </h2>
@@ -656,10 +771,10 @@ function App() {
 
       {assistantMounted && (
         <aside
-          className={`t-dropdown fixed bottom-[154px] right-4 z-50 w-[min(23rem,calc(100vw-2rem))] overflow-hidden rounded-xl bg-white text-ink shadow-[0_20px_70px_rgba(29,39,110,0.2)] ${assistantAnimating === 'open' ? 'is-open' : ''} ${assistantAnimating === 'closing' ? 'is-closing' : ''}`}
+          className={`t-dropdown t-assistant-shell ${assistantShellOffsetClass} fixed z-[60] overflow-hidden rounded-xl bg-white text-ink shadow-[0_20px_70px_rgba(29,39,110,0.2)] ${assistantAnimating === 'open' ? 'is-open' : ''} ${assistantAnimating === 'closing' ? 'is-closing' : ''}`}
           data-origin="bottom-right"
         >
-          <div className="flex items-start justify-between gap-3 bg-navy px-5 py-4 text-white">
+          <div className="flex shrink-0 items-start justify-between gap-3 bg-navy px-4 py-4 text-white md:px-5">
             <div className="flex min-w-0 items-center gap-3">
               <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-white/12">
                 <img src={logo} alt="" className="size-6 brightness-0 invert" />
@@ -674,7 +789,7 @@ function App() {
             </button>
           </div>
 
-          <div className="overflow-hidden px-5 pb-5 pt-4">
+          <div className="t-assistant-shell-body px-4 pb-5 pt-4 md:px-5">
             <div className="t-assistant-slide" data-page={assistantView}>
               <div className="t-assistant-panel space-y-5 text-sm font-normal" data-page-id="menu">
                 <p className="text-ink/62">
@@ -684,7 +799,7 @@ function App() {
                 <div className="space-y-3">
                   <p className="font-medium text-ink/42">Get in touch</p>
                   <div className="space-y-2">
-                    <a className="t-assistant-card group flex items-center gap-3 rounded-lg bg-mist p-3" href="tel:02089973012">
+                    <a className="t-assistant-card group flex items-center gap-3 rounded-lg bg-mist p-3.5 md:p-3" href="tel:02089973012">
                       <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-white text-navy">
                         <Phone size={15} />
                       </span>
@@ -694,7 +809,7 @@ function App() {
                       </span>
                       <ArrowRight size={14} className="t-assistant-card-arrow shrink-0 text-ink/32" />
                     </a>
-                    <a className="t-assistant-card group flex items-center gap-3 rounded-lg bg-mist p-3" href="mailto:pitshangerdental@gmail.com">
+                    <a className="t-assistant-card group flex items-center gap-3 rounded-lg bg-mist p-3.5 md:p-3" href="mailto:pitshangerdental@gmail.com">
                       <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-white text-navy">
                         <Mail size={15} />
                       </span>
@@ -705,7 +820,7 @@ function App() {
                       <ArrowRight size={14} className="t-assistant-card-arrow shrink-0 text-ink/32" />
                     </a>
                     <button
-                      className="t-assistant-card group flex w-full items-center gap-3 rounded-lg bg-mist p-3 text-left"
+                      className="t-assistant-card group flex w-full items-center gap-3 rounded-lg bg-mist p-3.5 text-left md:p-3"
                       onClick={() => setAssistantView('contact')}
                       type="button"
                     >
@@ -721,7 +836,10 @@ function App() {
                   </div>
                 </div>
 
-                <a className="t-assistant-action-primary group flex items-center gap-3 rounded-lg bg-peach p-3 text-ink" href="#visit">
+                <a
+                  className="t-assistant-action-primary group flex items-center gap-3 rounded-lg bg-peach p-3.5 text-ink md:p-3"
+                  href="#visit"
+                >
                   <span className="min-w-0 flex-1">
                     <span className="block font-medium">View registration details</span>
                     <span className="mt-1 block font-normal text-ink/58">Private and NHS patient information</span>
@@ -815,10 +933,10 @@ function App() {
                 </a>
 
                 <a
-                  className="t-assistant-action-primary group flex items-center justify-between gap-3 rounded-lg bg-peach p-3 text-ink"
+                  className="t-assistant-action-primary group flex items-center gap-3 rounded-lg bg-peach p-3.5 text-ink md:p-3"
                   href="#visit"
                 >
-                  <span className="font-medium">NEW PATIENTS: Click to Join Private or NHS</span>
+                  <span className="min-w-0 flex-1 font-medium text-pretty">NEW PATIENTS: Click to Join Private or NHS</span>
                   <ArrowRight size={14} className="t-assistant-card-arrow shrink-0 text-ink/32" />
                 </a>
               </div>
@@ -828,20 +946,26 @@ function App() {
       )}
 
       <button
-        className={`t-resize t-assistant-trigger fixed bottom-[86px] right-4 z-50 flex w-[60px] items-center overflow-hidden rounded-[8px] bg-ink p-3 text-sm font-semibold text-white shadow-[0_18px_60px_rgba(0,0,0,0.28)] ${isScrolled ? 'justify-center gap-0 sm:w-[60px]' : 'gap-3 pr-4 sm:w-[232px]'}`}
+        className={`t-resize t-assistant-trigger ${assistantOffsetClass} fixed z-50 flex w-[60px] items-center justify-center gap-0 overflow-hidden bg-ink text-sm font-semibold text-white shadow-[0_18px_60px_rgba(0,0,0,0.28)] ${
+          isScrolled
+            ? 'md:w-fit md:justify-center md:p-3'
+            : 'md:w-fit md:max-w-[min(14.5rem,calc(100vw-2rem))] md:justify-start md:gap-3 md:pr-4'
+        }`}
         onClick={toggleAssistant}
         aria-expanded={assistantMounted && assistantAnimating === 'open'}
         aria-label="Register at Pitshanger Dental"
         type="button"
       >
-        <img src={logo} alt="" className="size-9 brightness-0 invert" />
-        <span className={`t-assistant-label hidden whitespace-nowrap sm:inline ${isScrolled ? 'max-w-0 -translate-x-1 opacity-0' : 'max-w-[160px] translate-x-0 opacity-100'}`}>
+        <img src={logo} alt="" className="size-9 shrink-0 brightness-0 invert" />
+        <span
+          className={`t-assistant-label hidden whitespace-nowrap md:inline ${isScrolled ? 'md:max-w-0 md:-translate-x-1 md:opacity-0' : 'md:max-w-[160px] md:translate-x-0 md:opacity-100'}`}
+        >
           Pitshanger Assistant
         </span>
       </button>
 
       {offerVisible && (
-        <aside className="fixed inset-x-0 bottom-0 z-40 bg-white text-ink shadow-[0_-12px_40px_rgba(29,39,110,0.16)]">
+        <aside className="fixed inset-x-0 bottom-0 z-40 hidden bg-white text-ink shadow-[0_-12px_40px_rgba(29,39,110,0.16)] md:block">
           <div className="mx-auto grid h-[76px] w-full grid-cols-[auto_1fr_auto_auto] items-center gap-3 px-3 md:px-5">
             <img src={serviceImages[0]} alt="" className="hidden h-12 w-12 rounded-[8px] object-cover sm:block" />
             <div className="min-w-0">
